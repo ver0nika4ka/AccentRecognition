@@ -1,6 +1,6 @@
 # AccentRecognition
 
-Accentr recognition in foreign language speech using Speech Accent Archive Dataset. A 2-layer CNN is used as a model.
+Accentt recognition in foreign language speech using Speech Accent Archive Dataset. A 2-layer CNN is used as a model.
 
 A variety of audiosignal features is used.
 
