@@ -75,7 +75,7 @@ def retrieve_sample_metadata(sample_reference):
         row_value = row.text
         for c in '(),:':
             row_key = row_key.replace(c, '')
-        sample.set_field(row_key, row_value)
+        sample.set_field(None, row_key, row_value)
 
     if not Path.exists(Path(constants.METADATA_FILE_NAME)):
         new_metadata_file = json.dumps({current_language: []})
@@ -86,7 +86,7 @@ def retrieve_sample_metadata(sample_reference):
     with open(constants.METADATA_FILE_NAME) as metadata_file:
         metadata = json.load(metadata_file)
 
-    if current_language not in metadata:    # start array for lang if has not been started before
+    if current_language not in metadata:    # start array for lang if it has not been started before
         metadata[current_language] = []
 
     sample_json = dict(sample.to_struct())
@@ -97,6 +97,7 @@ def retrieve_sample_metadata(sample_reference):
 
 
 if __name__ == '__main__':
+    # TODO: Don't duplicate metadata information if the files were downloaded previously
     for language in languages:
         current_language = language
         get_samples_references()

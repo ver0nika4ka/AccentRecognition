@@ -7,9 +7,7 @@ MFCC_FILE_NAME = './mfccs.csv'
 MFCC_FILE_NAME_MASTER = './mfccs_master.csv'
 SAMPLE_FILE_NAME = '{}.mp3'
 
-languages = ['bengali', 'bulgarian', 'dari', 'dutch',
-             'english', 'french', 'german', 'gujarati',
-             'hindi', 'italian', 'kurdish', 'macedonian',
-             'nepali', 'pashto', 'polish', 'portuguese',
-             'romanian', 'russian', 'spanish', 'swedish',
-             'tajiki', 'urdu', 'chinese', 'arabic']
+languages = ['arabic', 'bengali', 'bulgarian', 'chinese', 'dari', 'dutch',
+             'english', 'french', 'german', 'gujarati', 'hindi', 'italian',
+             'kurdish', 'macedonian', 'nepali', 'pashto', 'polish', 'portuguese',
+             'romanian', 'russian', 'spanish', 'swedish', 'tajiki', 'urdu']
