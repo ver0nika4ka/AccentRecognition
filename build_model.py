@@ -1,5 +1,6 @@
 from comet_ml import ConfusionMatrix, Experiment
 
+import os
 import multiprocessing
 import time
 from collections import Counter, OrderedDict
@@ -27,7 +28,22 @@ from sklearn.preprocessing import LabelEncoder
 
 from constants import AUDIOS_INFO_FILE_NAME
 
-experiment = Experiment()
+# To use Comet ML visualization and logging you have to follow the instructions from README.md
+# on how to set COMET_API_KEY, COMET_WORKSPACE, COMET_PROJECT_NAME environment variables
+# Alternatively, you can set these variables manually in the code here by uncommenting the lines below
+# os.environ["COMET_API_KEY"] = 'YOUR_API_KEY'
+# os.environ["COMET_WORKSPACE"] = 'YOUR_WORKSPACE'
+# os.environ["COMET_PROJECT_NAME"] = 'YOUR_PROJECT_NAME'
+
+USE_COMET_ML = os.environ.get("COMET_API_KEY") and os.environ.get("COMET_WORKSPACE") \
+               and os.environ.get("COMET_PROJECT_NAME")
+
+if USE_COMET_ML:
+    experiment = Experiment(
+        api_key=os.environ["COMET_API_KEY"],
+        workspace=os.environ["COMET_WORKSPACE"],
+        project_name=os.environ["COMET_PROJECT_NAME"]
+    )
 
 """Parameters to adjust"""
 LANG_SET = 'en_ge_sw_du_ru_po_fr_it_sp_64mel_'  # what languages to use / fr_it_sp
@@ -649,7 +665,8 @@ def plot_history(history):
 
     plt.title('Model train vs validation')
 
-    experiment.log_figure(figure=plt)
+    if USE_COMET_ML:
+        experiment.log_figure(figure=plt)
     plt.show()
 
 
@@ -776,30 +793,35 @@ def main():
     logger.debug('Printing statistics (training ans testing counters)...')
     logger.info(f'Training samples: {train_count}')
     logger.info(f'Testing samples: {test_count}')
-    logger.debug('Displaying a confusion matrix, overall accuracy...')
 
-    cm = ConfusionMatrix()
-    cm.compute_matrix(y_test, y_predicted)
-    cm.labels = languages_classes_mapping
-    confusion_matrix = np.array(cm.to_json()['matrix'])
+    if USE_COMET_ML:
+        logger.debug('Displaying a confusion matrix, overall accuracy...')
+        cm = ConfusionMatrix()
+        cm.compute_matrix(y_test, y_predicted)
+        cm.labels = languages_classes_mapping
+        confusion_matrix = np.array(cm.to_json()['matrix'])
 
-    experiment.log_confusion_matrix(matrix=cm)
+        experiment.log_confusion_matrix(matrix=cm)
 
-    logger.debug('Accuracy to beat = (samples of most common class) / (all samples)')
-    acc_to_beat = np.amax(np.sum(confusion_matrix, axis=1) / np.sum(confusion_matrix))
-    confusion_matrix_acc = np.sum(confusion_matrix.diagonal()) / float(np.sum(confusion_matrix))
-    trained_model.evaluate(x_test.reshape(x_test.shape + (1,)), y_test)
+        logger.debug('Accuracy to beat = (samples of most common class) / (all samples)')
+        acc_to_beat = np.amax(np.sum(confusion_matrix, axis=1) / np.sum(confusion_matrix))
+        confusion_matrix_acc = np.sum(confusion_matrix.diagonal()) / float(np.sum(confusion_matrix))
+        trained_model.evaluate(x_test.reshape(x_test.shape + (1,)), y_test)
 
-    logger.info(f'Accuracy to beat: {acc_to_beat}')
-    logger.info(f'Confusion matrix:\n {confusion_matrix}')
-    logger.info(f'Accuracy: {confusion_matrix_acc}')
-    logger.debug('Displaying the baseline, and whether it has been hit...')
+        logger.info(f'Accuracy to beat: {acc_to_beat}')
+        logger.info(f'Confusion matrix:\n {confusion_matrix}')
+        logger.info(f'Accuracy: {confusion_matrix_acc}')
+        logger.debug('Displaying the baseline, and whether it has been hit...')
 
-    baseline_difference = confusion_matrix_acc - acc_to_beat
-    if baseline_difference < 0:
-        logger.info('Baseline has not been hit.')
-    else:
-        logger.info(f'Baseline score: {baseline_difference}')
+        baseline_difference = confusion_matrix_acc - acc_to_beat
+        if baseline_difference < 0:
+            logger.info('Baseline has not been hit.')
+        else:
+            logger.info(f'Baseline score: {baseline_difference}')
+    else:  # no Comet ML
+        trained_model.evaluate(x_test.reshape(x_test.shape + (1,)), y_test, verbose=1)
+        logger.info(f'Comet ML API_KEY and other variables are not found')
+        logger.info(f'Confusion Matrix accuracy calculations are not performed')
 
     logger.debug('Showing languages to categorical mapping...')
     logger.info(f'Relation classes to categories: {languages_mapping}')
