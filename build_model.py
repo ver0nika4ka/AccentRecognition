@@ -88,7 +88,6 @@ def filter_df(df):
     :param df: (DataFrame) unfiltered audio files DataFrame
     :return: (DataFrame) filtered DataFrame
     """
-    filtered_df = pd.DataFrame()
 
     german = df[df.language == 'german'][:MAX_PER_LANG]
     spanish = df[df.language == 'spanish'][:MAX_PER_LANG]
@@ -105,36 +104,36 @@ def filter_df(df):
     bulgarian = df[df.language == 'bulgarian'][:MAX_PER_LANG]
     polish = df[df.language == 'polish'][:MAX_PER_LANG]
 
+    to_include = []
     if 'ge' in LANG_SET:
-        filtered_df = filtered_df.append(german)
+        to_include.append(german)
     if 'sp' in LANG_SET:
-        filtered_df = filtered_df.append(spanish)
+        to_include.append(spanish)
     if 'ch' in LANG_SET:
-        filtered_df = filtered_df.append(chinese)
+        to_include.append(chinese)
     if 'en' in LANG_SET:
-        filtered_df = filtered_df.append(english)
+        to_include.append(english)
     if 'du' in LANG_SET:
-        filtered_df = filtered_df.append(dutch)
+        to_include.append(dutch)
     if 'sw' in LANG_SET:
-        filtered_df = filtered_df.append(swedish)
+        to_include.append(swedish)
     if 'fr' in LANG_SET:
-        filtered_df = filtered_df.append(french)
+        to_include.append(french)
     if 'ar' in LANG_SET:
-        filtered_df = filtered_df.append(arabic)
+        to_include.append(arabic)
     if 'it' in LANG_SET:
-        filtered_df = filtered_df.append(italian)
+        to_include.append(italian)
     if 'ro' in LANG_SET:
-        filtered_df = filtered_df.append(romanian)
+        to_include.append(romanian)
     if 'ru' in LANG_SET:
-        filtered_df = filtered_df.append(russian)
+        to_include.append(russian)
     if 'ma' in LANG_SET:
-        filtered_df = filtered_df.append(macedonian)
+        to_include.append(macedonian)
     if 'bu' in LANG_SET:
-        filtered_df = filtered_df.append(bulgarian)
+        to_include.append(bulgarian)
     if 'po' in LANG_SET:
-        filtered_df = filtered_df.append(polish)
-
-    return filtered_df
+        to_include.append(polish)
+    return pd.concat(to_include)
 
 
 def extract_features(audio_file):
