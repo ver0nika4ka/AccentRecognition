@@ -106,6 +106,9 @@ def extract_features(audio_file):
     :return: (numpy.ndarray) feature matrices
     (columns == FRAME_SIZE, rows == number of features)
     """
+    if not Path(audio_file).exists():
+        logger.warning(f"Audio file {audio_file} is not found. Check the dataset")
+        return
     y, sr = librosa.load(audio_file, sr=None)
     y = librosa.core.resample(y=y, orig_sr=sr, target_sr=SAMPLE_RATE, scale=True)
     s, _ = librosa.magphase(librosa.stft(y, hop_length=HOP_LENGTH, win_length=WIN_LENGTH))  # magnitudes of spectrogram
@@ -361,6 +364,9 @@ def preprocess_new_data(x, y):
     logger.debug('Loading WAV files...')
     pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     x = pool.map(extract_features, x)
+    if any(feature is None for feature in x):
+        logger.error("Some audio files are missing. See the log warnings above and fix the dataset before proceeding")
+        return None
 
     logger.debug('Making segments of feature vectors...')
     x_segmented, y_segmented = split_into_matrices(x, y_categorical)
@@ -720,6 +726,8 @@ def main():
         corresponding_languages = df.language
 
         preprocess = preprocess_new_data(audio_paths, corresponding_languages)
+        if not preprocess:
+            return -1
         x_train, x_test, y_train, y_test, train_count, test_count, languages_mapping = preprocess
     else:
         x_train, x_test, y_train, y_test, train_count, test_count, languages_mapping = open_preprocessed_data()
