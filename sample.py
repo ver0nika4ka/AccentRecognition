@@ -12,7 +12,7 @@ class Sample(models.Base):
     english_residence = fields.StringField()
     length_of_english_residence = fields.StringField()
 
-    def set_field(self, field_key, field_value):
+    def set_field(self, field, field_key, field_value):
         if field_key == 'birth_place':
             self.birth_place = ' '.join(field_value.split()[2:-1])
         elif field_key == 'native_language':
@@ -29,5 +29,7 @@ class Sample(models.Base):
             self.english_residence = ' '.join(field_value.split()[2:])
         elif field_key == 'length_of_english_residence':
             self.length_of_english_residence = ' '.join(field_value.split()[4:])
+        elif field_key == 'file_location':
+            self.file_location = field_value
         else:
             raise ValueError('Unexpected key: {}'.format(field_key))

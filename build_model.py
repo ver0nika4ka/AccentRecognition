@@ -1,5 +1,6 @@
 from comet_ml import ConfusionMatrix, Experiment
 
+import os
 import multiprocessing
 import time
 from collections import Counter, OrderedDict
@@ -25,9 +26,24 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from constant_dir.constants import AUDIOS_INFO_FILE_NAME
+import constants
 
-experiment = Experiment()
+# To use Comet ML visualization and logging you have to follow the instructions from README.md
+# on how to set COMET_API_KEY, COMET_WORKSPACE, COMET_PROJECT_NAME environment variables
+# Alternatively, you can set these variables manually in the code here by uncommenting the lines below
+# os.environ["COMET_API_KEY"] = 'YOUR_API_KEY'
+# os.environ["COMET_WORKSPACE"] = 'YOUR_WORKSPACE'
+# os.environ["COMET_PROJECT_NAME"] = 'YOUR_PROJECT_NAME'
+
+USE_COMET_ML = os.environ.get("COMET_API_KEY") and os.environ.get("COMET_WORKSPACE") \
+               and os.environ.get("COMET_PROJECT_NAME")
+
+if USE_COMET_ML:
+    experiment = Experiment(
+        api_key=os.environ["COMET_API_KEY"],
+        workspace=os.environ["COMET_WORKSPACE"],
+        project_name=os.environ["COMET_PROJECT_NAME"]
+    )
 
 """Parameters to adjust"""
 LANG_SET = 'en_ge_sw_du_ru_po_fr_it_sp_64mel_'  # what languages to use / fr_it_sp
@@ -50,8 +66,8 @@ MEL_S_LOG = False
 selection_method = 'UNIVARIATE'  # PCE / UNIVARIATE
 SCORE_FUNC = f_classif  # f_classif / mutual_info_classif [score function for univariate  feature selector]
 NUM_OF_FEATURES = 10  # [number of optimal features to work with]
-SELECT_FEATURES = False  # [whether or not use feature selection method]
-CHECK_DATASETS = False
+SELECT_FEATURES = False  # [whether to use feature selection method]
+CHECK_DATASETS = True
 
 EPOCHS = 60  # [Number of training epochs]
 BATCH_SIZE = 64  # size of mini-batch used
@@ -68,57 +84,18 @@ def filter_df(df):
     """
     Filters audio files DataFrame based on options:
     [language, path -- path to file, path_unsilenced -- path to file with removed silence parts].
-    List of languages available is listed in constants.py.
+    Dictionary of available languages is defined in constants.py.
     :param df: (DataFrame) unfiltered audio files DataFrame
     :return: (DataFrame) filtered DataFrame
     """
-    filtered_df = pd.DataFrame()
 
-    german = df[df.language == 'german'][:MAX_PER_LANG]
-    spanish = df[df.language == 'spanish'][:MAX_PER_LANG]
-    chinese = df[df.language == 'chinese'][:MAX_PER_LANG]
-    english = df[df.language == 'english'][:MAX_PER_LANG]
-    arabic = df[df.language == 'arabic'][:MAX_PER_LANG]
-    french = df[df.language == 'french'][:MAX_PER_LANG]
-    italian = df[df.language == 'italian'][:MAX_PER_LANG]
-    romanian = df[df.language == 'romanian'][:MAX_PER_LANG]
-    dutch = df[df.language == 'dutch'][:MAX_PER_LANG]
-    swedish = df[df.language == 'swedish'][:MAX_PER_LANG]
-    russian = df[df.language == 'russian'][:MAX_PER_LANG]
-    macedonian = df[df.language == 'macedonian'][:MAX_PER_LANG]
-    bulgarian = df[df.language == 'bulgarian'][:MAX_PER_LANG]
-    polish = df[df.language == 'polish'][:MAX_PER_LANG]
-
-    if 'ge' in LANG_SET:
-        filtered_df = filtered_df.append(german)
-    if 'sp' in LANG_SET:
-        filtered_df = filtered_df.append(spanish)
-    if 'ch' in LANG_SET:
-        filtered_df = filtered_df.append(chinese)
-    if 'en' in LANG_SET:
-        filtered_df = filtered_df.append(english)
-    if 'du' in LANG_SET:
-        filtered_df = filtered_df.append(dutch)
-    if 'sw' in LANG_SET:
-        filtered_df = filtered_df.append(swedish)
-    if 'fr' in LANG_SET:
-        filtered_df = filtered_df.append(french)
-    if 'ar' in LANG_SET:
-        filtered_df = filtered_df.append(arabic)
-    if 'it' in LANG_SET:
-        filtered_df = filtered_df.append(italian)
-    if 'ro' in LANG_SET:
-        filtered_df = filtered_df.append(romanian)
-    if 'ru' in LANG_SET:
-        filtered_df = filtered_df.append(russian)
-    if 'ma' in LANG_SET:
-        filtered_df = filtered_df.append(macedonian)
-    if 'bu' in LANG_SET:
-        filtered_df = filtered_df.append(bulgarian)
-    if 'po' in LANG_SET:
-        filtered_df = filtered_df.append(polish)
-
-    return filtered_df
+    lang_codes = [lc for lc in LANG_SET.split('_') if lc in constants.LANGUAGES]
+    df_to_include = []
+    for lang_code in lang_codes:
+        lang_fullname = constants.LANGUAGES[lang_code]
+        # TODO: Filter recordings randomly (based on random seed), not first ones
+        df_to_include.append(df[df.language == lang_fullname][:MAX_PER_LANG])
+    return pd.concat(df_to_include)
 
 
 def extract_features(audio_file):
@@ -129,6 +106,9 @@ def extract_features(audio_file):
     :return: (numpy.ndarray) feature matrices
     (columns == FRAME_SIZE, rows == number of features)
     """
+    if not Path(audio_file).exists():
+        logger.warning(f"Audio file {audio_file} is not found. Check the dataset")
+        return
     y, sr = librosa.load(audio_file, sr=None)
     y = librosa.core.resample(y=y, orig_sr=sr, target_sr=SAMPLE_RATE, scale=True)
     s, _ = librosa.magphase(librosa.stft(y, hop_length=HOP_LENGTH, win_length=WIN_LENGTH))  # magnitudes of spectrogram
@@ -182,7 +162,7 @@ def normalize_feature_vectors(feature_vectors):
 
 def normalize_scalar_feature(feature_vector):
     """
-    Normalizes scalar features (e.g. spectral roll-off, F0, etc.
+    Normalizes scalar features (e.g. spectral roll-off, F0, etc.).
     Each feature is extracted from an audio segment of WIN_LENGTH length.
     :param feature_vector: (numpy.ndarray) Vector of scalar features
     :return: (numpy.ndarray) List of normalized features
@@ -384,6 +364,9 @@ def preprocess_new_data(x, y):
     logger.debug('Loading WAV files...')
     pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     x = pool.map(extract_features, x)
+    if any(feature is None for feature in x):
+        logger.error("Some audio files are missing. See the log warnings above and fix the dataset before proceeding")
+        return None
 
     logger.debug('Making segments of feature vectors...')
     x_segmented, y_segmented = split_into_matrices(x, y_categorical)
@@ -509,7 +492,7 @@ def compare_sets(x_1, x_2):
     """
     :param x_1: (numpy.ndarray) list of 2-D numpy arrays; training set
     :param x_2: (numpy.ndarray) list of 2-D numpy arrays; testing set
-    :return: String (how many occurances have been found)
+    :return: String (how many occurrences have been found)
     """
     equal_matrices_num = 0
     indices_to_remove = []
@@ -584,8 +567,7 @@ def train_model(x_train, y_train, x_validation, y_validation):
 
     logger.debug('Training model...')
     history = model.fit(data_generator.flow(x_train, y_train, batch_size=BATCH_SIZE),
-                        steps_per_epoch=x_train.shape[0] / BATCH_SIZE
-                        , epochs=EPOCHS,
+                        steps_per_epoch=x_train.shape[0] / BATCH_SIZE, epochs=EPOCHS,
                         callbacks=[es, time_history], validation_data=(x_validation, y_validation))
     epoch_av_time = round(np.mean(time_history.times), 2)
 
@@ -625,7 +607,7 @@ def build_model(input_shape, num_classes):
 
 def plot_history(history):
     """
-    Plots how training ans testing
+    Plots how training and testing
     accuracy and loss change
     over the training process
     :param history: a model's training history
@@ -649,7 +631,8 @@ def plot_history(history):
 
     plt.title('Model train vs validation')
 
-    experiment.log_figure(figure=plt)
+    if USE_COMET_ML:
+        experiment.log_figure(figure=plt)
     plt.show()
 
 
@@ -664,7 +647,7 @@ def one_hot_to_int(one_hot_arr):
 
 def select_features(x_train, y_train, x_test):
     """
-    Performs features selection by flatenning
+    Performs features selection by flattening
     feature matrices
     :param x_train: (numpy.ndarray) list of feature matrices used for training
     :param y_train: (numpy.ndarray) list of binary labels
@@ -736,12 +719,14 @@ def main():
                  ' Otherwise preprocessing audios to get this data...')
 
     if not Path.exists(Path(features_npy)) or not Path.exists(Path(info_data_npy)):
-        df = pd.read_csv(AUDIOS_INFO_FILE_NAME)
+        df = pd.read_csv(constants.AUDIOS_INFO_FILE_NAME)
         df = filter_df(df)
         audio_paths = df.path if not UNSILENCE else df.path_unsilenced
         corresponding_languages = df.language
 
         preprocess = preprocess_new_data(audio_paths, corresponding_languages)
+        if not preprocess:
+            return -1
         x_train, x_test, y_train, y_test, train_count, test_count, languages_mapping = preprocess
     else:
         x_train, x_test, y_train, y_test, train_count, test_count, languages_mapping = open_preprocessed_data()
@@ -752,13 +737,13 @@ def main():
         x_train, x_test = select_features(x_train, y_train, x_test)
         x_train, x_test = create_segments_after_selection((x_train, x_test))
 
-    logger.debug('Training model...')
-
     if not Path.exists(Path(model_file)):
+        logger.debug('Training model...')
         trained_model = train_model(np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test))
         trained_model.summary()
         trained_model.save(model_file)
     else:
+        logger.debug('Found trained model. Loading...')
         trained_model = load_model(model_file)
 
     languages_classes_mapping = list(languages_mapping.values())
@@ -769,37 +754,42 @@ def main():
     logger.debug(f'Y train shape: {y_train.shape}')
     logger.debug(f'Y test shape: {y_test.shape}')
 
-    y_predicted = trained_model.predict_classes(x_test.reshape(x_test.shape + (1,)), verbose=1)
+    y_predicted = np.argmax(trained_model.predict(x_test.reshape(x_test.shape + (1,)), verbose=1), axis=1)
     y_test_bool = np.argmax(y_test, axis=1)
 
     logger.info(f'Metrics:\n{classification_report(y_test_bool, y_predicted, target_names=languages_classes_mapping)}')
     logger.debug('Printing statistics (training ans testing counters)...')
     logger.info(f'Training samples: {train_count}')
     logger.info(f'Testing samples: {test_count}')
-    logger.debug('Displaying a confusion matrix, overall accuracy...')
 
-    cm = ConfusionMatrix()
-    cm.compute_matrix(y_test, y_predicted)
-    cm.labels = languages_classes_mapping
-    confusion_matrix = np.array(cm.to_json()['matrix'])
+    if USE_COMET_ML:
+        logger.debug('Displaying a confusion matrix, overall accuracy...')
+        cm = ConfusionMatrix()
+        cm.compute_matrix(y_test, y_predicted)
+        cm.labels = languages_classes_mapping
+        confusion_matrix = np.array(cm.to_json()['matrix'])
 
-    experiment.log_confusion_matrix(matrix=cm)
+        experiment.log_confusion_matrix(matrix=cm)
 
-    logger.debug('Accuracy to beat = (samples of most common class) / (all samples)')
-    acc_to_beat = np.amax(np.sum(confusion_matrix, axis=1) / np.sum(confusion_matrix))
-    confusion_matrix_acc = np.sum(confusion_matrix.diagonal()) / float(np.sum(confusion_matrix))
-    trained_model.evaluate(x_test.reshape(x_test.shape + (1,)), y_test)
+        logger.debug('Accuracy to beat = (samples of most common class) / (all samples)')
+        acc_to_beat = np.amax(np.sum(confusion_matrix, axis=1) / np.sum(confusion_matrix))
+        confusion_matrix_acc = np.sum(confusion_matrix.diagonal()) / float(np.sum(confusion_matrix))
+        trained_model.evaluate(x_test.reshape(x_test.shape + (1,)), y_test)
 
-    logger.info(f'Accuracy to beat: {acc_to_beat}')
-    logger.info(f'Confusion matrix:\n {confusion_matrix}')
-    logger.info(f'Accuracy: {confusion_matrix_acc}')
-    logger.debug('Displaying the baseline, and whether it has been hit...')
+        logger.info(f'Accuracy to beat: {acc_to_beat}')
+        logger.info(f'Confusion matrix:\n {confusion_matrix}')
+        logger.info(f'Accuracy: {confusion_matrix_acc}')
+        logger.debug('Displaying the baseline, and whether it has been hit...')
 
-    baseline_difference = confusion_matrix_acc - acc_to_beat
-    if baseline_difference < 0:
-        logger.info('Baseline has not been hit.')
-    else:
-        logger.info(f'Baseline score: {baseline_difference}')
+        baseline_difference = confusion_matrix_acc - acc_to_beat
+        if baseline_difference < 0:
+            logger.info('Baseline has not been hit.')
+        else:
+            logger.info(f'Baseline score: {baseline_difference}')
+    else:  # no Comet ML
+        trained_model.evaluate(x_test.reshape(x_test.shape + (1,)), y_test, verbose=1)
+        logger.info(f'Comet ML API_KEY and other variables are not found')
+        logger.info(f'Confusion Matrix accuracy calculations are not performed')
 
     logger.debug('Showing languages to categorical mapping...')
     logger.info(f'Relation classes to categories: {languages_mapping}')

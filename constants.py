@@ -3,13 +3,32 @@ AUDIO_URL = 'soundtracks/{}.mp3'
 AUDIO_PATH = './audios/{}'
 BROWSE_URL = 'browse_language.php?function=find&language={}'
 METADATA_FILE_NAME = './metadata.json'
-MFCC_FILE_NAME = './mfccs.csv'
-MFCC_FILE_NAME_MASTER = './mfccs_master.csv'
+AUDIOS_INFO_FILE_NAME = './mfccs.csv'
 SAMPLE_FILE_NAME = '{}.mp3'
 
-languages = ['bengali', 'bulgarian', 'dari', 'dutch',
-             'english', 'french', 'german', 'gujarati',
-             'hindi', 'italian', 'kurdish', 'macedonian',
-             'nepali', 'pashto', 'polish', 'portuguese',
-             'romanian', 'russian', 'spanish', 'swedish',
-             'tajiki', 'urdu', 'chinese', 'arabic']
+LANGUAGES = {
+    'ar': 'arabic',
+    'bn': 'bengali',
+    'bu': 'bulgarian',
+    'ch': 'chinese',
+    'da': 'dari',
+    'du': 'dutch',
+    'en': 'english',
+    'fr': 'french',
+    'ge': 'german',
+    'gu': 'gujarati',
+    'hi': 'hindi',
+    'it': 'italian',
+    'ku': 'kurdish',
+    'ma': 'macedonian',
+    'ne': 'nepali',
+    'pa': 'pashto',
+    'po': 'polish',
+    'pt': 'portuguese',
+    'ro': 'romanian',
+    'ru': 'russian',
+    'sp': 'spanish',
+    'sw': 'swedish',
+    'ta': 'tajiki',
+    'ur': 'urdu'
+}
