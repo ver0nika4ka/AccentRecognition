@@ -1,0 +1,12 @@
+.idea/
+accent-env/
+.DS_Store
+__pycache__/
+
+# project related files
+audios/
+features/
+models/
+testing_data/
+metadata.json
+mfccs.csv
