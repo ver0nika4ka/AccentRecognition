@@ -9,7 +9,6 @@ from pydub import AudioSegment
 from unsilence import Unsilence
 
 import constants
-from constants import languages, AUDIOS_INFO_FILE_NAME
 
 locations = dict()
 samples = []
@@ -70,11 +69,11 @@ def main():
     #     logger.error("FFMPEG is not found. Install before proceeding.")
     #     return -1
 
-    for language in languages:
+    for language in constants.LANGUAGES.values():
         process_files(language)
 
     audios_info_df = pd.DataFrame(audios_info, columns=['language', 'path', 'path_unsilenced'])
-    audios_info_df.to_csv(AUDIOS_INFO_FILE_NAME, index=False)
+    audios_info_df.to_csv(constants.AUDIOS_INFO_FILE_NAME, index=False)
 
 
 if __name__ == '__main__':

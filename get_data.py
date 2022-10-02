@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 from loguru import logger
 
 import constants
-from constants import languages
 from sample import Sample
 
 samples_references = []
@@ -98,8 +97,7 @@ def retrieve_sample_metadata(sample_reference):
 
 if __name__ == '__main__':
     # TODO: Don't duplicate metadata information if the files were downloaded previously
-    for language in languages:
-        current_language = language
+    for current_language in constants.LANGUAGES.values():
         get_samples_references()
 
         logger.debug(f'num of samples {len(samples_references)} for lang {current_language}')

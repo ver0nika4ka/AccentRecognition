@@ -26,7 +26,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from constants import AUDIOS_INFO_FILE_NAME
+import constants
 
 # To use Comet ML visualization and logging you have to follow the instructions from README.md
 # on how to set COMET_API_KEY, COMET_WORKSPACE, COMET_PROJECT_NAME environment variables
@@ -84,56 +84,18 @@ def filter_df(df):
     """
     Filters audio files DataFrame based on options:
     [language, path -- path to file, path_unsilenced -- path to file with removed silence parts].
-    List of languages available is listed in constants.py.
+    Dictionary of available languages is defined in constants.py.
     :param df: (DataFrame) unfiltered audio files DataFrame
     :return: (DataFrame) filtered DataFrame
     """
 
-    german = df[df.language == 'german'][:MAX_PER_LANG]
-    spanish = df[df.language == 'spanish'][:MAX_PER_LANG]
-    chinese = df[df.language == 'chinese'][:MAX_PER_LANG]
-    english = df[df.language == 'english'][:MAX_PER_LANG]
-    arabic = df[df.language == 'arabic'][:MAX_PER_LANG]
-    french = df[df.language == 'french'][:MAX_PER_LANG]
-    italian = df[df.language == 'italian'][:MAX_PER_LANG]
-    romanian = df[df.language == 'romanian'][:MAX_PER_LANG]
-    dutch = df[df.language == 'dutch'][:MAX_PER_LANG]
-    swedish = df[df.language == 'swedish'][:MAX_PER_LANG]
-    russian = df[df.language == 'russian'][:MAX_PER_LANG]
-    macedonian = df[df.language == 'macedonian'][:MAX_PER_LANG]
-    bulgarian = df[df.language == 'bulgarian'][:MAX_PER_LANG]
-    polish = df[df.language == 'polish'][:MAX_PER_LANG]
-
-    to_include = []
-    if 'ge' in LANG_SET:
-        to_include.append(german)
-    if 'sp' in LANG_SET:
-        to_include.append(spanish)
-    if 'ch' in LANG_SET:
-        to_include.append(chinese)
-    if 'en' in LANG_SET:
-        to_include.append(english)
-    if 'du' in LANG_SET:
-        to_include.append(dutch)
-    if 'sw' in LANG_SET:
-        to_include.append(swedish)
-    if 'fr' in LANG_SET:
-        to_include.append(french)
-    if 'ar' in LANG_SET:
-        to_include.append(arabic)
-    if 'it' in LANG_SET:
-        to_include.append(italian)
-    if 'ro' in LANG_SET:
-        to_include.append(romanian)
-    if 'ru' in LANG_SET:
-        to_include.append(russian)
-    if 'ma' in LANG_SET:
-        to_include.append(macedonian)
-    if 'bu' in LANG_SET:
-        to_include.append(bulgarian)
-    if 'po' in LANG_SET:
-        to_include.append(polish)
-    return pd.concat(to_include)
+    lang_codes = [lc for lc in LANG_SET.split('_') if lc in constants.LANGUAGES]
+    df_to_include = []
+    for lang_code in lang_codes:
+        lang_fullname = constants.LANGUAGES[lang_code]
+        # TODO: Filter recordings randomly (based on random seed), not first ones
+        df_to_include.append(df[df.language == lang_fullname][:MAX_PER_LANG])
+    return pd.concat(df_to_include)
 
 
 def extract_features(audio_file):
@@ -752,7 +714,7 @@ def main():
                  ' Otherwise preprocessing audios to get this data...')
 
     if not Path.exists(Path(features_npy)) or not Path.exists(Path(info_data_npy)):
-        df = pd.read_csv(AUDIOS_INFO_FILE_NAME)
+        df = pd.read_csv(constants.AUDIOS_INFO_FILE_NAME)
         df = filter_df(df)
         audio_paths = df.path if not UNSILENCE else df.path_unsilenced
         corresponding_languages = df.language

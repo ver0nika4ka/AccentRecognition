@@ -6,7 +6,29 @@ METADATA_FILE_NAME = './metadata.json'
 AUDIOS_INFO_FILE_NAME = './mfccs.csv'
 SAMPLE_FILE_NAME = '{}.mp3'
 
-languages = ['arabic', 'bengali', 'bulgarian', 'chinese', 'dari', 'dutch',
-             'english', 'french', 'german', 'gujarati', 'hindi', 'italian',
-             'kurdish', 'macedonian', 'nepali', 'pashto', 'polish', 'portuguese',
-             'romanian', 'russian', 'spanish', 'swedish', 'tajiki', 'urdu']
+LANGUAGES = {
+    'ar': 'arabic',
+    'bn': 'bengali',
+    'bu': 'bulgarian',
+    'ch': 'chinese',
+    'da': 'dari',
+    'du': 'dutch',
+    'en': 'english',
+    'fr': 'french',
+    'ge': 'german',
+    'gu': 'gujarati',
+    'hi': 'hindi',
+    'it': 'italian',
+    'ku': 'kurdish',
+    'ma': 'macedonian',
+    'ne': 'nepali',
+    'pa': 'pashto',
+    'po': 'polish',
+    'pt': 'portuguese',
+    'ro': 'romanian',
+    'ru': 'russian',
+    'sp': 'spanish',
+    'sw': 'swedish',
+    'ta': 'tajiki',
+    'ur': 'urdu'
+}
