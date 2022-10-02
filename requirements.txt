@@ -5,7 +5,7 @@ keras~=2.10
 librosa~=0.9
 loguru~=0.6
 lxml~=4.9
-matplotlib~=3.6
+matplotlib~=3.5
 numpy~=1.23.3
 pandas~=1.5
 protobuf==3.19.4
