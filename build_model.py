@@ -66,8 +66,8 @@ MEL_S_LOG = False
 selection_method = 'UNIVARIATE'  # PCE / UNIVARIATE
 SCORE_FUNC = f_classif  # f_classif / mutual_info_classif [score function for univariate  feature selector]
 NUM_OF_FEATURES = 10  # [number of optimal features to work with]
-SELECT_FEATURES = False  # [whether or not use feature selection method]
-CHECK_DATASETS = False
+SELECT_FEATURES = False  # [whether to use feature selection method]
+CHECK_DATASETS = True
 
 EPOCHS = 60  # [Number of training epochs]
 BATCH_SIZE = 64  # size of mini-batch used
@@ -162,7 +162,7 @@ def normalize_feature_vectors(feature_vectors):
 
 def normalize_scalar_feature(feature_vector):
     """
-    Normalizes scalar features (e.g. spectral roll-off, F0, etc.
+    Normalizes scalar features (e.g. spectral roll-off, F0, etc.).
     Each feature is extracted from an audio segment of WIN_LENGTH length.
     :param feature_vector: (numpy.ndarray) Vector of scalar features
     :return: (numpy.ndarray) List of normalized features
@@ -492,7 +492,7 @@ def compare_sets(x_1, x_2):
     """
     :param x_1: (numpy.ndarray) list of 2-D numpy arrays; training set
     :param x_2: (numpy.ndarray) list of 2-D numpy arrays; testing set
-    :return: String (how many occurances have been found)
+    :return: String (how many occurrences have been found)
     """
     equal_matrices_num = 0
     indices_to_remove = []
@@ -567,8 +567,7 @@ def train_model(x_train, y_train, x_validation, y_validation):
 
     logger.debug('Training model...')
     history = model.fit(data_generator.flow(x_train, y_train, batch_size=BATCH_SIZE),
-                        steps_per_epoch=x_train.shape[0] / BATCH_SIZE
-                        , epochs=EPOCHS,
+                        steps_per_epoch=x_train.shape[0] / BATCH_SIZE, epochs=EPOCHS,
                         callbacks=[es, time_history], validation_data=(x_validation, y_validation))
     epoch_av_time = round(np.mean(time_history.times), 2)
 
@@ -608,7 +607,7 @@ def build_model(input_shape, num_classes):
 
 def plot_history(history):
     """
-    Plots how training ans testing
+    Plots how training and testing
     accuracy and loss change
     over the training process
     :param history: a model's training history
@@ -648,7 +647,7 @@ def one_hot_to_int(one_hot_arr):
 
 def select_features(x_train, y_train, x_test):
     """
-    Performs features selection by flatenning
+    Performs features selection by flattening
     feature matrices
     :param x_train: (numpy.ndarray) list of feature matrices used for training
     :param y_train: (numpy.ndarray) list of binary labels
@@ -738,13 +737,13 @@ def main():
         x_train, x_test = select_features(x_train, y_train, x_test)
         x_train, x_test = create_segments_after_selection((x_train, x_test))
 
-    logger.debug('Training model...')
-
     if not Path.exists(Path(model_file)):
+        logger.debug('Training model...')
         trained_model = train_model(np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test))
         trained_model.summary()
         trained_model.save(model_file)
     else:
+        logger.debug('Found trained model. Loading...')
         trained_model = load_model(model_file)
 
     languages_classes_mapping = list(languages_mapping.values())
