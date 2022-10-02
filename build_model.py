@@ -25,7 +25,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from constant_dir.constants import AUDIOS_INFO_FILE_NAME
+from constants import AUDIOS_INFO_FILE_NAME
 
 experiment = Experiment()
 

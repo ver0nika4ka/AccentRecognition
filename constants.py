@@ -3,8 +3,7 @@ AUDIO_URL = 'soundtracks/{}.mp3'
 AUDIO_PATH = './audios/{}'
 BROWSE_URL = 'browse_language.php?function=find&language={}'
 METADATA_FILE_NAME = './metadata.json'
-MFCC_FILE_NAME = './mfccs.csv'
-MFCC_FILE_NAME_MASTER = './mfccs_master.csv'
+AUDIOS_INFO_FILE_NAME = './mfccs.csv'
 SAMPLE_FILE_NAME = '{}.mp3'
 
 languages = ['arabic', 'bengali', 'bulgarian', 'chinese', 'dari', 'dutch',

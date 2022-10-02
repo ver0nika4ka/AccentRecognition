@@ -8,7 +8,7 @@ from pydub import AudioSegment
 from unsilence import Unsilence
 
 import constants
-from constant_dir.constants import languages, AUDIOS_INFO_FILE_NAME
+from constants import languages, AUDIOS_INFO_FILE_NAME
 
 locations = dict()
 samples = []
