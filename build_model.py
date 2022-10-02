@@ -755,7 +755,7 @@ def main():
     logger.debug(f'Y train shape: {y_train.shape}')
     logger.debug(f'Y test shape: {y_test.shape}')
 
-    y_predicted = trained_model.predict_classes(x_test.reshape(x_test.shape + (1,)), verbose=1)
+    y_predicted = np.argmax(trained_model.predict(x_test.reshape(x_test.shape + (1,)), verbose=1), axis=1)
     y_test_bool = np.argmax(y_test, axis=1)
 
     logger.info(f'Metrics:\n{classification_report(y_test_bool, y_predicted, target_names=languages_classes_mapping)}')
