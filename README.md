@@ -6,7 +6,7 @@ The code also allows flexible parameters adjustments.
 
 
 ## Setup
-The steps below were tested with Python 3.8 (Ubuntu) and Python 3.9 and 3.10 (macOS).
+The steps below were tested with Python 3.8 (Ubuntu) and Python 3.9 (macOS).
 
 **Important** Currently, the supported versions of TensorFlow are <= 2.8.*; the code works with Tensorflow >= 2.9.0, but the accuracy drops significantly.
 
