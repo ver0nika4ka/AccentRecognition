@@ -17,7 +17,7 @@ from keras.layers.convolutional import MaxPooling2D, Conv2D
 from keras.layers.core import Dense, Dropout, Flatten
 from keras.models import load_model, Sequential
 from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 from loguru import logger
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest
@@ -67,7 +67,7 @@ selection_method = 'UNIVARIATE'  # PCE / UNIVARIATE
 SCORE_FUNC = f_classif  # f_classif / mutual_info_classif [score function for univariate  feature selector]
 NUM_OF_FEATURES = 10  # [number of optimal features to work with]
 SELECT_FEATURES = False  # [whether to use feature selection method]
-CHECK_DATASETS = True
+CHECK_DATASETS = False
 
 EPOCHS = 60  # [Number of training epochs]
 BATCH_SIZE = 64  # size of mini-batch used

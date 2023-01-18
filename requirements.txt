@@ -1,13 +1,13 @@
 beautifulsoup4~=4.11
 comet_ml~=3.31
 jsonmodels~=2.5
-keras~=2.10
-librosa~=0.9
+keras~=2.8.0
+librosa==0.8.1
 loguru~=0.6
 lxml~=4.9
-matplotlib~=3.5
-numpy~=1.23.3
-pandas~=1.5
+matplotlib~=3.3.3
+numpy~=1.23.5
+pandas~=1.1.4
 protobuf==3.19.4
 pydub~=0.25
 requests~=2.28
@@ -17,7 +17,7 @@ unsilence~=1.0
 
 # TensorFlow must be installed either manually or by uncommenting the following lines
 # Uncomment next line for all the Operating Systems and architectures other than macOS and Apple Silicon
-# tensorflow~=2.10
+# tensorflow==2.8.4
 # Uncomment next two lines only for Apple Silicon processor
-# tensorflow-macos~=2.10
-# tensorflow-metal~=0.6
+# tensorflow-macos~=2.8
+# tensorflow-metal~=0.4

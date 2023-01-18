@@ -8,10 +8,26 @@ The code also allows flexible parameters adjustments.
 ## Setup
 The steps below were tested with Python 3.8 (Ubuntu) and Python 3.9 and 3.10 (macOS).
 
+**Important** Currently, the supported versions of TensorFlow are <= 2.8.*; the code works with Tensorflow >= 2.9.0, but the accuracy drops significantly.
+
 ### Clone Repository and Install Python Dependencies
 1. Open the Terminal (or Command Prompt on Windows), clone the repository and navigate into the directory:
 `git clone https://github.com/ver0nika4ka/AccentRecognition.git && cd AccentRecognition` 
-2. Create a virtual environment and activate it:
+2. Create virtual environment (using `conda` or traditional `venv`):
+
+#### _Option A. Conda (recommended for Ubuntu with Nvidia GPU)_:
+```shell
+conda create -n accent-recognition python=3.8
+conda activate accent-recognition
+conda install -c conda-forge cudatoolkit=11.2 cudnn=8.2
+export PATH="$CONDA_PREFIX/lib:$PATH"
+```
+
+You either need to run `export PATH="$CONDA_PREFIX/lib:$PATH"` every time you open new Terminal window or add this line to `~/.bashrc`.
+Next, go to the step 3 to update `pip` and install requirements.
+
+#### _Option B. Virtual Environment_:
+Create a virtual environment and activate it:
 - ***Unix-based system***:
     `python3 -m venv accent-env && source accent-env/bin/activate`
 - ***Windows*** (note: on Windows type `python` instead of `python3` here and for the steps below):
@@ -22,9 +38,9 @@ The steps below were tested with Python 3.8 (Ubuntu) and Python 3.9 and 3.10 (ma
 
 4. Install TensorFlow version according to the operating system and its architecture:
 - ***macOS with Apple Silicon (M1, M2, etc.)***:
-    `python3 -m pip install tensorflow-macos==2.10 tensorflow-metal==0.6`
+    `python3 -m pip install tensorflow-macos==2.8.* tensorflow-metal==0.4`
 - ***All other Operating Systems and architectures (Ubuntu, Windows, macOS with Intel processor, etc.)***:
-    `python3 -m pip install tensorflow==2.10`
+    `python3 -m pip install tensorflow==2.8.*`
 
 ### Set up Comet ML
 [Comet ML](https://www.comet.com/site/) is needed for visualization and logging of the experiments. 
